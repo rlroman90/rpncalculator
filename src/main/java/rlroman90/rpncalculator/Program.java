@@ -1,15 +1,14 @@
  package rlroman90.rpncalculator;
 
- import java.math.RoundingMode;
  import java.util.Scanner;
 
  public class Program {
     public static void main(String[] args) {
-        int storingPrecision = 15;
-        int roundingPrecision = 10;
-        RoundingMode roundingMode = RoundingMode.HALF_UP;
+        PropertiesLoader configLoader = new PropertiesLoader();
+        configLoader.loadProperties("config.properties");
 
-        DoubleRounding doubleRounding = new DoubleRounding(storingPrecision, roundingPrecision, roundingMode);
+        DoubleRounding doubleRounding =
+                new DoubleRounding(configLoader.StoringPrecision, configLoader.PrintingPrecision, configLoader.SetRoundingMode);
         RpnCalculator rpnCalc = new RpnCalculator(doubleRounding);
         String inputGreeting = "Please Enter Input Below:";
         StringBuilder calcInput = new StringBuilder();

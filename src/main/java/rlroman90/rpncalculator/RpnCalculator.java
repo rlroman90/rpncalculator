@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class RpnCalculator {
-    private static String decimalRegex = "^-?[0-9]+(\\.[0-9][0-9]?)?";
+    private static String decimalRegex = "^-?[0-9]+(\\.?)[0-9]+";
 
     private Operators availableOperators;
     private CalcStacks stacks;
