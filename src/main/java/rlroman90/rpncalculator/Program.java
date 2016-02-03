@@ -1,10 +1,7 @@
-package rlroman90.rpncalculator;
-
-import java.util.ArrayList;
-import java.util.Stack;
+ package rlroman90.rpncalculator;
 
 public class Program {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         //String testString = "5 2";
         //String testString = "5 2 undo";
         //String testString = "1 2 3 5 +";
@@ -27,17 +24,10 @@ public class Program {
         String testString = "1 2 3 4 5 * * * *";
 
         RpnCalculator rpnCalc = new RpnCalculator();
-        Stack<Double> valueStack = rpnCalc.calcString(testString);
+        StackOutput result = rpnCalc.calcString(testString);
 
-        ArrayList<Double> outputValues = new ArrayList<Double>();
-        while(!valueStack.empty())
-            outputValues.add(0, valueStack.pop());
-
-        StringBuilder outputString = new StringBuilder();
-        for(double value : outputValues)
-            outputString.append(value).append(" ");
-        if(outputString.length() > 0)
-            outputString.deleteCharAt(outputString.length() - 1);
-        System.out.println(outputString);
+        if(!result.ExceptionMessage.isEmpty())
+            System.out.println(result.ExceptionMessage);
+        System.out.println("Stack: " + result.OutputString);
     }
 }

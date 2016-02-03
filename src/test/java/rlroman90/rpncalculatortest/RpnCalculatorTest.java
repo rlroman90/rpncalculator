@@ -4,8 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import rlroman90.rpncalculator.RpnCalculator;
-
-import java.util.Stack;
+import rlroman90.rpncalculator.StackOutput;
 
 public class RpnCalculatorTest {
 
@@ -16,159 +15,181 @@ public class RpnCalculatorTest {
         calculator = new RpnCalculator();
     }
 
-    @Test(expected=Exception.class)
-    public void testUnknownOperator() throws Exception {
+    @Test
+    public void testEmptyInput() {
         String emptyString = "";
+        String exception = "Input String was empty.";
 
-        calculator.calcString(emptyString);
+        StackOutput result = calculator.calcString(emptyString);
+
+        assertEquals(exception, result.ExceptionMessage);
     }
 
     @Test
-    public void  testNumberOnly() throws Exception {
-        Double firstEntry = 5.0;
+    public void testInvalidOperator() {
+        String invalidString = "5 2 q";
+        String exception = "operator q (position: 4): invalid operator";
 
-        Stack<Double> result = calculator.calcString(firstEntry.toString());
+        StackOutput result = calculator.calcString(invalidString);
 
-        assertEquals(firstEntry, result.peek());
+        assertEquals(exception, result.ExceptionMessage);
     }
 
-    @Test(expected=Exception.class)
-    public void testNotEnoughElementsForTwoElementOperator() throws Exception {
-        String notEnoughElements = "5 +";
+    @Test
+    public void  testNumberOnly() {
+        String firstEntry = "5.0";
 
-        calculator.calcString(notEnoughElements);
+        StackOutput result = calculator.calcString(firstEntry.toString());
+
+        assertEquals(firstEntry, result.OutputString);
     }
 
-    @Test(expected=Exception.class)
-    public void testNotEnoughElementsForSqrt() throws Exception {
+    @Test
+    public void testNotEnoughElementsForTwoElementOperator() {
+        String notEnoughElements = "5 2 + +";
+        String exception = "operator + (position: 6): insufficient parameters";
+
+        StackOutput result = calculator.calcString(notEnoughElements);
+
+        assertEquals(exception, result.ExceptionMessage);
+    }
+
+    @Test
+    public void testNotEnoughElementsForSqrt() {
         String notEnoughElements = "sqrt";
+        String exception = "operator sqrt (position: 0): insufficient parameters";
 
-        calculator.calcString(notEnoughElements);
+        StackOutput result = calculator.calcString(notEnoughElements);
+
+        assertEquals(exception, result.ExceptionMessage);
     }
 
-    @Test(expected=Exception.class)
-    public void testNotEnoughElementsForUndo() throws Exception {
+    @Test
+    public void testNotEnoughElementsForUndo() {
         String notEnoughElements = "undo";
+        String exception = "operator undo (position: 0): insufficient parameters";
 
-        calculator.calcString(notEnoughElements);
+        StackOutput result = calculator.calcString(notEnoughElements);
+
+        assertEquals(exception, result.ExceptionMessage);
     }
 
     @Test
-    public void testAddition() throws Exception {
+    public void testAddition() {
         String addingNumbers = "5 2 +";
-        Double sum = 7.0;
+        String sum = "7.0";
 
-        Stack<Double> result = calculator.calcString(addingNumbers);
+        StackOutput result = calculator.calcString(addingNumbers);
 
-        assertEquals(sum, result.peek());
+        assertEquals(sum, result.OutputString);
     }
 
     @Test
-    public void testSubtraction() throws Exception {
+    public void testSubtraction() {
         String subtractingNumbers = "5 3 -";
-        Double difference = 2.0;
+        String difference = "2.0";
 
-        Stack<Double> result = calculator.calcString(subtractingNumbers);
+        StackOutput result = calculator.calcString(subtractingNumbers);
 
-        assertEquals(difference, result.peek());
+        assertEquals(difference, result.OutputString);
     }
 
     @Test
-    public void testMultiplication() throws Exception {
+    public void testMultiplication() {
         String multiplyingNumbers = "5 4 *";
-        Double product = 20.0;
+        String product = "20.0";
 
-        Stack<Double> result = calculator.calcString(multiplyingNumbers);
+        StackOutput result = calculator.calcString(multiplyingNumbers);
 
-        assertEquals(product, result.peek());
+        assertEquals(product, result.OutputString);
     }
 
     @Test
-    public void testDivision() throws Exception {
+    public void testDivision() {
         String divisionNumbers = "5 5 /";
-        Double quotient = 1.0;
+        String quotient = "1.0";
 
-        Stack<Double> result = calculator.calcString(divisionNumbers);
+        StackOutput result = calculator.calcString(divisionNumbers);
 
-        assertEquals(quotient, result.peek());
+        assertEquals(quotient, result.OutputString);
     }
 
     @Test
-    public void testSquareRoot() throws Exception {
+    public void testSquareRoot() {
         String sqrtNumbers = "4 sqrt";
-        Double squareRoot = 2.0;
+        String squareRoot = "2.0";
 
-        Stack<Double> result = calculator.calcString(sqrtNumbers);
+        StackOutput result = calculator.calcString(sqrtNumbers);
 
-        assertEquals(squareRoot, result.peek());
+        assertEquals(squareRoot, result.OutputString);
     }
 
     @Test
-    public void testUndoNumber() throws Exception {
+    public void testUndoNumber() {
         String undoNumber = "5 2 undo";
-        Double firstElement = 5.0;
+        String firstElement = "5.0";
 
-        Stack<Double> result = calculator.calcString(undoNumber);
+        StackOutput result = calculator.calcString(undoNumber);
 
-        assertEquals(firstElement, result.peek());
+        assertEquals(firstElement, result.OutputString);
     }
 
     @Test
-    public void testUndoAddition() throws Exception {
+    public void testUndoAddition() {
         String undoNumber = "5 2 + undo";
-        Double lastElement = 2.0;
+        String lastElement = "5.0 2.0";
 
-        Stack<Double> result = calculator.calcString(undoNumber);
+        StackOutput result = calculator.calcString(undoNumber);
 
-        assertEquals(lastElement, result.peek());
+        assertEquals(lastElement, result.OutputString);
     }
 
     @Test
-    public void testUndoSubtraction() throws Exception {
+    public void testUndoSubtraction() {
         String undoNumber = "5 2 - undo";
-        Double lastElement = 2.0;
+        String lastElement = "5.0 2.0";
 
-        Stack<Double> result = calculator.calcString(undoNumber);
+        StackOutput result = calculator.calcString(undoNumber);
 
-        assertEquals(lastElement, result.peek());
+        assertEquals(lastElement, result.OutputString);
     }
 
     @Test
-    public void testUndoMultiplication() throws Exception {
+    public void testUndoMultiplication() {
         String undoNumber = "5 2 * undo";
-        Double lastElement = 2.0;
+        String lastElement = "5.0 2.0";
 
-        Stack<Double> result = calculator.calcString(undoNumber);
+        StackOutput result = calculator.calcString(undoNumber);
 
-        assertEquals(lastElement, result.peek());
+        assertEquals(lastElement, result.OutputString);
     }
 
     @Test
-    public void testUndoDivision() throws Exception {
+    public void testUndoDivision() {
         String undoNumber = "5 2 / undo";
-        Double lastElement = 2.0;
+        String lastElement = "5.0 2.0";
 
-        Stack<Double> result = calculator.calcString(undoNumber);
+        StackOutput result = calculator.calcString(undoNumber);
 
-        assertEquals(lastElement, result.peek());
+        assertEquals(lastElement, result.OutputString);
     }
 
     @Test
-    public void testClear() throws Exception {
+    public void testClear() {
         String sqrtNumbers = "4 clear";
 
-        Stack<Double> result = calculator.calcString(sqrtNumbers);
+        StackOutput result = calculator.calcString(sqrtNumbers);
 
-        assertEquals(0, result.size());
+        assertTrue(result.OutputString.isEmpty());
     }
 
     @Test
-    public void testUndoClear() throws Exception {
+    public void testUndoClear() {
         String undoNumber = "5 clear undo";
-        Double firstElement = 5.0;
+        String firstElement = "5.0";
 
-        Stack<Double> result = calculator.calcString(undoNumber);
+        StackOutput result = calculator.calcString(undoNumber);
 
-        assertEquals(firstElement, result.peek());
+        assertEquals(firstElement, result.OutputString);
     }
 }

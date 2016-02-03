@@ -1,127 +1,173 @@
 package rlroman90.rpncalculator;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class RpnCalculator {
     private static String DecimalRegex = "[0-9]+(\\.[0-9][0-9]?)?";
 
-    private static HashMap<String, String> twoElementOperationsAndInverses;
-
-    private Stack<Double> valueStack;
-    private Stack<String> operatorStack;
-    private Stack<Double> lastValueStack;
-    private Stack<Stack<Double>> lastStateStack;
+    private Operators availableOperators;
+    private CalcStacks stacks;
 
     public RpnCalculator() {
-        twoElementOperationsAndInverses = new HashMap<String, String>();
-        twoElementOperationsAndInverses.put("+", "-");
-        twoElementOperationsAndInverses.put("-", "+");
-        twoElementOperationsAndInverses.put("*", "/");
-        twoElementOperationsAndInverses.put("/", "*");
-
-        valueStack = new Stack<Double>();
-        operatorStack = new Stack<String>();
-        lastValueStack = new Stack<Double>();
-        lastStateStack = new Stack<Stack<Double>>();
+        stacks = new CalcStacks();
+        availableOperators = new Operators();
     }
 
-    //TODO: Fix input with what will come from command prompt
-    public Stack<Double> calcString(String inputString) throws Exception {
+    public StackOutput calcString(String inputString) {
 
+        StackOutput result = new StackOutput();
         String[] operators = inputString.trim().split(" ");
-
-        for (String operator : operators) {
-            processOperator(operator);
+        int currentOperator = 0;
+        try {
+            verifyNotEmptyString(inputString);
+            while (currentOperator < operators.length) {
+                processOperator(operators[currentOperator]);
+                currentOperator++;
+            }
+        } catch (Exception ex) {
+            int position = getOperatorPositionInString(operators, currentOperator);
+            result.ExceptionMessage = String.format(ex.getMessage(), position);
+            result.OutputString = convertValueStackToString();
         }
-        return valueStack;
+        result.OutputString = convertValueStackToString();
+        return result;
     }
 
-    private void processOperator(String currentOperator) throws Exception {
+    private void verifyNotEmptyString(String inputOperators) throws Exception {
+        if(inputOperators.equals(""))
+            throw new Exception("Input String was empty.");
+    }
+
+    private void processOperator(String operator) throws Exception {
+        if (isValidOperator(operator))
+            determineOperator(operator);
+        else
+            throw new Exception("operator " + operator + " (position: %d): invalid operator");
+    }
+
+    private int getOperatorPositionInString(String[] operators, int operatorNumber) {
+        int stringPosition = 0;
+        for(int i = 0; i < operatorNumber; i++)
+            stringPosition += operators[i].length() + 1;
+        return stringPosition;
+    }
+
+    private String convertValueStackToString() {
+        ArrayList<Double> outputValues = getValueList();
+        return buildOutputString(outputValues);
+    }
+
+    private ArrayList<Double> getValueList() {
+        ArrayList<Double> outputValues = new ArrayList<Double>();
+        Stack<Double> valueStackCopy = (Stack<Double>) stacks.ValueStack.clone();
+        while(!valueStackCopy.empty())
+            outputValues.add(0, valueStackCopy.pop());
+        return outputValues;
+    }
+
+    private String buildOutputString(ArrayList<Double> outputValues) {
+        StringBuilder outputString = new StringBuilder();
+        for(double value : outputValues)
+            outputString.append(value).append(" ");
+        if(outputString.length() > 0)
+            outputString.deleteCharAt(outputString.length() - 1);
+        return outputString.toString();
+    }
+
+    private boolean isValidOperator(String operator) {
+        boolean result;
+        if(availableOperators.ValidOperators.contains(operator) || operator.matches(DecimalRegex))
+            result = true;
+        else
+            result = false;
+        return result;
+    }
+
+    private void determineOperator(String currentOperator) throws Exception {
         if (currentOperator.matches(DecimalRegex))
             processNumber(currentOperator);
-        else if (twoElementOperationsAndInverses.keySet().contains(currentOperator))
+        else if (availableOperators.TwoElementOperationsAndInverses.keySet().contains(currentOperator))
             processTwoElementOperator(currentOperator);
-        else if(currentOperator.equals("sqrt"))
+        else if (currentOperator.equals("sqrt"))
             processSqrt(currentOperator);
         else if (currentOperator.equals("clear"))
             processClear(currentOperator);
         else if (currentOperator.equals("undo"))
             processUndo(currentOperator);
-        else
-            throw new Exception("Invalid Operator: " + currentOperator);
     }
 
     private void processNumber(String currentOperator) {
-        operatorStack.push(currentOperator);
-        valueStack.push(Double.parseDouble(currentOperator));
+        stacks.OperatorStack.push(currentOperator);
+        stacks.ValueStack.push(Double.parseDouble(currentOperator));
     }
 
     private void processTwoElementOperator(String currentOperator) throws Exception {
-        if (valueStack.size() >= 2) {
-            operatorStack.push(currentOperator);
-            double value1 = valueStack.pop();
-            double value2 = valueStack.pop();
+        if (stacks.ValueStack.size() >= 2) {
+            stacks.OperatorStack.push(currentOperator);
+            double value1 = stacks.ValueStack.pop();
+            double value2 = stacks.ValueStack.pop();
             double newValue = getTwoElementOperatorCalc(currentOperator, value1, value2);
-            valueStack.push(newValue);
-            lastValueStack.push(value1);
+            stacks.ValueStack.push(newValue);
+            stacks.LastValueStack.push(value1);
         } else
-            throw new Exception("Not Enough Elements On Stack For Operation: " + currentOperator);
+            throw new Exception("operator " + currentOperator + " (position: %d): insufficient parameters");
     }
 
     private void processSqrt(String currentOperator) throws Exception {
-        if (valueStack.size() >= 1) {
-            operatorStack.push(currentOperator);
-            valueStack.push(Math.sqrt(valueStack.pop()));
+        if (stacks.ValueStack.size() >= 1) {
+            stacks.OperatorStack.push(currentOperator);
+            stacks.ValueStack.push(Math.sqrt(stacks.ValueStack.pop()));
         } else
-            throw new Exception("Not Enough Elements On Stack For Operation: " + currentOperator);
+            throw new Exception("operator " + currentOperator + " (position: %d): insufficient parameters");
     }
 
     private void processClear(String currentOperator) {
-        operatorStack.push(currentOperator);
-        lastStateStack.push((Stack<Double>) valueStack.clone());
-        valueStack.clear();
+        stacks.OperatorStack.push(currentOperator);
+        stacks.LastStateStack.push((Stack<Double>) stacks.ValueStack.clone());
+        stacks.ValueStack.clear();
     }
 
     private void processUndo(String currentOperator) throws Exception {
-        if (operatorStack.size() >= 1)
+        if (stacks.OperatorStack.size() >= 1)
             processUndoOperator();
-        else
-            throw new Exception("Not Enough Elements On Stack For Operation: " + currentOperator);
+        else {
+            throw new Exception("operator " + currentOperator + " (position: %d): insufficient parameters");
+        }
     }
 
     private void processUndoOperator() {
-        String lastOperator = operatorStack.pop();
+        String lastOperator = stacks.OperatorStack.pop();
         if (lastOperator.matches("[0-9]+(\\.[0-9][0-9]?)?"))
             processUndoNumber();
-        else if(twoElementOperationsAndInverses.keySet().contains(lastOperator)) {
+        else if(availableOperators.TwoElementOperationsAndInverses.keySet().contains(lastOperator))
             processUndoTwoElementOperation(lastOperator);
-        } else if (lastOperator.equals("sqrt")) {
+        else if (lastOperator.equals("sqrt"))
             processUndoSqrt();
-        } else
+        else
             processUndoClear();
     }
 
     private void processUndoNumber() {
-        valueStack.pop();
+        stacks.ValueStack.pop();
     }
 
     private void processUndoTwoElementOperation(String lastOperator) {
-        double lastResult = valueStack.pop();
-        double lastArgument = lastValueStack.pop();
-        String inverseOperator = twoElementOperationsAndInverses.get(lastOperator);
+        double lastResult = stacks.ValueStack.pop();
+        double lastArgument = stacks.LastValueStack.pop();
+        String inverseOperator = availableOperators.TwoElementOperationsAndInverses.get(lastOperator);
         double missingArgument = getTwoElementOperatorCalc(inverseOperator, lastArgument, lastResult);
-        valueStack.push(missingArgument);
-        valueStack.push(lastArgument);
+        stacks.ValueStack.push(missingArgument);
+        stacks.ValueStack.push(lastArgument);
     }
 
     private void processUndoSqrt() {
-        double lastResult = valueStack.pop();
-        valueStack.push(lastResult * lastResult);
+        double lastResult = stacks.ValueStack.pop();
+        stacks.ValueStack.push(lastResult * lastResult);
     }
 
     private void processUndoClear() {
-        valueStack = lastStateStack.pop();
+        stacks.ValueStack = stacks.LastStateStack.pop();
     }
 
     private double getTwoElementOperatorCalc(String currentOperator, double value1, double value2) {
