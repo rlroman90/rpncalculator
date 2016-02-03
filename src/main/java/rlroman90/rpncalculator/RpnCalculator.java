@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class RpnCalculator {
-    private static String DecimalRegex = "[0-9]+(\\.[0-9][0-9]?)?";
+    private static String decimalRegex = "[0-9]+(\\.[0-9][0-9]?)?";
 
     private Operators availableOperators;
     private CalcStacks stacks;
+    private Rounding rounding;
 
-    public RpnCalculator() {
+    public RpnCalculator(Rounding roundingClass) {
         stacks = new CalcStacks();
         availableOperators = new Operators();
+        rounding = roundingClass;
     }
 
     public StackOutput calcString(String inputString) {
@@ -40,7 +42,7 @@ public class RpnCalculator {
     }
 
     private void processOperator(String operator) throws Exception {
-        if (isValidOperator(operator))
+        if (availableOperators.ValidOperators.contains(operator) || operator.matches(decimalRegex))
             determineOperator(operator);
         else
             throw new Exception("operator " + operator + " (position: %d): invalid operator");
@@ -68,24 +70,26 @@ public class RpnCalculator {
 
     private String buildOutputString(ArrayList<Double> outputValues) {
         StringBuilder outputString = new StringBuilder();
-        for(double value : outputValues)
-            outputString.append(value).append(" ");
+        for(double value : outputValues) {
+            String convertedValue = getPrintedValue(value);
+            outputString.append(convertedValue).append(" ");
+        }
         if(outputString.length() > 0)
             outputString.deleteCharAt(outputString.length() - 1);
         return outputString.toString();
     }
 
-    private boolean isValidOperator(String operator) {
-        boolean result;
-        if(availableOperators.ValidOperators.contains(operator) || operator.matches(DecimalRegex))
-            result = true;
+    private String getPrintedValue(double value) {
+        String convertedValue;
+        if(value % 1 == 0)
+            convertedValue = Integer.toString((int) value);
         else
-            result = false;
-        return result;
+            convertedValue = Double.toString(rounding.roundForPrinting(value));
+        return convertedValue;
     }
 
     private void determineOperator(String currentOperator) throws Exception {
-        if (currentOperator.matches(DecimalRegex))
+        if (currentOperator.matches(decimalRegex))
             processNumber(currentOperator);
         else if (availableOperators.TwoElementOperationsAndInverses.keySet().contains(currentOperator))
             processTwoElementOperator(currentOperator);
@@ -99,7 +103,8 @@ public class RpnCalculator {
 
     private void processNumber(String currentOperator) {
         stacks.OperatorStack.push(currentOperator);
-        stacks.ValueStack.push(Double.parseDouble(currentOperator));
+        double roundedOperator = rounding.roundForStoring(Double.parseDouble(currentOperator));
+        stacks.ValueStack.push(roundedOperator);
     }
 
     private void processTwoElementOperator(String currentOperator) throws Exception {
@@ -108,7 +113,7 @@ public class RpnCalculator {
             double value1 = stacks.ValueStack.pop();
             double value2 = stacks.ValueStack.pop();
             double newValue = getTwoElementOperatorCalc(currentOperator, value1, value2);
-            stacks.ValueStack.push(newValue);
+            stacks.ValueStack.push(rounding.roundForStoring(newValue));
             stacks.LastValueStack.push(value1);
         } else
             throw new Exception("operator " + currentOperator + " (position: %d): insufficient parameters");
@@ -117,7 +122,8 @@ public class RpnCalculator {
     private void processSqrt(String currentOperator) throws Exception {
         if (stacks.ValueStack.size() >= 1) {
             stacks.OperatorStack.push(currentOperator);
-            stacks.ValueStack.push(Math.sqrt(stacks.ValueStack.pop()));
+            double squareRoot = Math.sqrt(stacks.ValueStack.pop());
+            stacks.ValueStack.push(rounding.roundForStoring(squareRoot));
         } else
             throw new Exception("operator " + currentOperator + " (position: %d): insufficient parameters");
     }
@@ -157,13 +163,14 @@ public class RpnCalculator {
         double lastArgument = stacks.LastValueStack.pop();
         String inverseOperator = availableOperators.TwoElementOperationsAndInverses.get(lastOperator);
         double missingArgument = getTwoElementOperatorCalc(inverseOperator, lastArgument, lastResult);
-        stacks.ValueStack.push(missingArgument);
-        stacks.ValueStack.push(lastArgument);
+        stacks.ValueStack.push(rounding.roundForStoring(missingArgument));
+        stacks.ValueStack.push(rounding.roundForStoring(lastArgument));
     }
 
     private void processUndoSqrt() {
         double lastResult = stacks.ValueStack.pop();
-        stacks.ValueStack.push(lastResult * lastResult);
+        double square = lastResult * lastResult;
+        stacks.ValueStack.push(rounding.roundForStoring(square));
     }
 
     private void processUndoClear() {

@@ -1,6 +1,8 @@
  package rlroman90.rpncalculator;
 
-public class Program {
+ import java.math.RoundingMode;
+
+ public class Program {
     public static void main(String[] args) {
         //String testString = "5 2";
         //String testString = "5 2 undo";
@@ -23,7 +25,12 @@ public class Program {
         //String testString = "1 2 3 4 5 * clear 3 4 -";
         String testString = "1 2 3 4 5 * * * *";
 
-        RpnCalculator rpnCalc = new RpnCalculator();
+        int storingPrecision = 10;
+        int roundingPrecision = 15;
+        RoundingMode roundingMode = RoundingMode.HALF_UP;
+
+        DoubleRounding doubleRounding = new DoubleRounding(storingPrecision, roundingPrecision, roundingMode);
+        RpnCalculator rpnCalc = new RpnCalculator(doubleRounding);
         StackOutput result = rpnCalc.calcString(testString);
 
         if(!result.ExceptionMessage.isEmpty())

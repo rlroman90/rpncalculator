@@ -3,16 +3,21 @@ package rlroman90.rpncalculatortest;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.mockito.Mockito;
+import rlroman90.rpncalculator.Rounding;
 import rlroman90.rpncalculator.RpnCalculator;
 import rlroman90.rpncalculator.StackOutput;
 
 public class RpnCalculatorTest {
 
     RpnCalculator calculator;
+    Rounding testRounding;
 
     @Before
     public void setUp() {
-        calculator = new RpnCalculator();
+        testRounding = Mockito.mock(Rounding.class);
+        calculator = new RpnCalculator(testRounding);
     }
 
     @Test
@@ -38,10 +43,12 @@ public class RpnCalculatorTest {
     @Test
     public void  testNumberOnly() {
         String firstEntry = "5.0";
+        String output = "5";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
 
-        StackOutput result = calculator.calcString(firstEntry.toString());
+        StackOutput result = calculator.calcString(firstEntry);
 
-        assertEquals(firstEntry, result.OutputString);
+        assertEquals(output, result.OutputString);
     }
 
     @Test
@@ -77,7 +84,10 @@ public class RpnCalculatorTest {
     @Test
     public void testAddition() {
         String addingNumbers = "5 2 +";
-        String sum = "7.0";
+        String sum = "7";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
+        Mockito.when(testRounding.roundForStoring(7.0)).thenReturn(7.0);
 
         StackOutput result = calculator.calcString(addingNumbers);
 
@@ -87,7 +97,10 @@ public class RpnCalculatorTest {
     @Test
     public void testSubtraction() {
         String subtractingNumbers = "5 3 -";
-        String difference = "2.0";
+        String difference = "2";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(3.0)).thenReturn(3.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
 
         StackOutput result = calculator.calcString(subtractingNumbers);
 
@@ -97,7 +110,10 @@ public class RpnCalculatorTest {
     @Test
     public void testMultiplication() {
         String multiplyingNumbers = "5 4 *";
-        String product = "20.0";
+        String product = "20";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(4.0)).thenReturn(4.0);
+        Mockito.when(testRounding.roundForStoring(20.0)).thenReturn(20.0);
 
         StackOutput result = calculator.calcString(multiplyingNumbers);
 
@@ -107,7 +123,9 @@ public class RpnCalculatorTest {
     @Test
     public void testDivision() {
         String divisionNumbers = "5 5 /";
-        String quotient = "1.0";
+        String quotient = "1";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(1.0)).thenReturn(1.0);
 
         StackOutput result = calculator.calcString(divisionNumbers);
 
@@ -117,7 +135,9 @@ public class RpnCalculatorTest {
     @Test
     public void testSquareRoot() {
         String sqrtNumbers = "4 sqrt";
-        String squareRoot = "2.0";
+        String squareRoot = "2";
+        Mockito.when(testRounding.roundForStoring(4.0)).thenReturn(4.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
 
         StackOutput result = calculator.calcString(sqrtNumbers);
 
@@ -127,7 +147,8 @@ public class RpnCalculatorTest {
     @Test
     public void testUndoNumber() {
         String undoNumber = "5 2 undo";
-        String firstElement = "5.0";
+        String firstElement = "5";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
 
         StackOutput result = calculator.calcString(undoNumber);
 
@@ -137,7 +158,10 @@ public class RpnCalculatorTest {
     @Test
     public void testUndoAddition() {
         String undoNumber = "5 2 + undo";
-        String lastElement = "5.0 2.0";
+        String lastElement = "5 2";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
+        Mockito.when(testRounding.roundForStoring(7.0)).thenReturn(7.0);
 
         StackOutput result = calculator.calcString(undoNumber);
 
@@ -147,7 +171,10 @@ public class RpnCalculatorTest {
     @Test
     public void testUndoSubtraction() {
         String undoNumber = "5 2 - undo";
-        String lastElement = "5.0 2.0";
+        String lastElement = "5 2";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
+        Mockito.when(testRounding.roundForStoring(3.0)).thenReturn(3.0);
 
         StackOutput result = calculator.calcString(undoNumber);
 
@@ -157,7 +184,10 @@ public class RpnCalculatorTest {
     @Test
     public void testUndoMultiplication() {
         String undoNumber = "5 2 * undo";
-        String lastElement = "5.0 2.0";
+        String lastElement = "5 2";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
+        Mockito.when(testRounding.roundForStoring(10.0)).thenReturn(10.0);
 
         StackOutput result = calculator.calcString(undoNumber);
 
@@ -167,7 +197,10 @@ public class RpnCalculatorTest {
     @Test
     public void testUndoDivision() {
         String undoNumber = "5 2 / undo";
-        String lastElement = "5.0 2.0";
+        String lastElement = "5 2";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
+        Mockito.when(testRounding.roundForStoring(2.0)).thenReturn(2.0);
+        Mockito.when(testRounding.roundForStoring(2.5)).thenReturn(2.5);
 
         StackOutput result = calculator.calcString(undoNumber);
 
@@ -186,7 +219,8 @@ public class RpnCalculatorTest {
     @Test
     public void testUndoClear() {
         String undoNumber = "5 clear undo";
-        String firstElement = "5.0";
+        String firstElement = "5";
+        Mockito.when(testRounding.roundForStoring(5.0)).thenReturn(5.0);
 
         StackOutput result = calculator.calcString(undoNumber);
 
