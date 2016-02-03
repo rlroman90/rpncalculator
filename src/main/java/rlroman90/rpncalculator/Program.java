@@ -1,40 +1,49 @@
  package rlroman90.rpncalculator;
 
  import java.math.RoundingMode;
+ import java.util.Scanner;
 
  public class Program {
     public static void main(String[] args) {
-        //String testString = "5 2";
-        //String testString = "5 2 undo";
-        //String testString = "1 2 3 5 +";
-        //String testString = "1 2 3 5 + + undo undo";
-        //String testString = "5 2 -";
-        //String testString = "5 2 - undo";
-        //String testString = "5 4 *";
-        //String testString = "5 4 * undo";
-        //String testString = "7 12 2 /";
-        //String testString = "7 12 2 / undo";
-        //String testString = "2 sqrt";
-        //String testString = "2 sqrt undo";
-        //String testString = "1 2 3 clear 5";
-        //String testString = "1 2 3 clear undo";
-        //String testString = "2 sqrt clear 9 sqrt";
-        //String testString = "5 2 - 3 - clear";
-        //String testString = "5 4 3 2 undo undo * 5 * undo";
-        //String testString = "7 12 2 / * 4 /";
-        //String testString = "1 2 3 4 5 * clear 3 4 -";
-        String testString = "1 2 3 4 5 * * * *";
-
-        int storingPrecision = 10;
-        int roundingPrecision = 15;
+        int storingPrecision = 15;
+        int roundingPrecision = 10;
         RoundingMode roundingMode = RoundingMode.HALF_UP;
 
         DoubleRounding doubleRounding = new DoubleRounding(storingPrecision, roundingPrecision, roundingMode);
         RpnCalculator rpnCalc = new RpnCalculator(doubleRounding);
-        StackOutput result = rpnCalc.calcString(testString);
+        String inputGreeting = "Please Enter Input Below:";
+        StringBuilder calcInput = new StringBuilder();
 
-        if(!result.ExceptionMessage.isEmpty())
-            System.out.println(result.ExceptionMessage);
-        System.out.println("Stack: " + result.OutputString);
+        printStartupMessage(inputGreeting);
+
+        Scanner scanner = new Scanner(System.in);
+        String userInput = scanner.nextLine();
+
+        while (!userInput.equals("exit")) {
+            calcInput.append(userInput.trim());
+            StackOutput result = rpnCalc.calcString(calcInput.toString());
+
+            printOutputMessages(result);
+            calcInput.setLength(0);
+
+            System.out.println(inputGreeting);
+            userInput = scanner.nextLine();
+        }
     }
-}
+
+     private static void printOutputMessages(StackOutput result) {
+         if (!result.ExceptionMessage.isEmpty())
+             System.out.println(result.ExceptionMessage);
+         System.out.println("Stack: " + result.OutputString);
+     }
+
+     private static void printStartupMessage(String inputGreeting) {
+         System.out.println("Welcome to the RPN Calculator");
+         System.out.println("Please Enter a Line with Numbers or allowed operations each separated by a space.");
+         System.out.println("Allowed Operations Include: +, -, /, *, sqrt, clear, undo.");
+         System.out.println("The input should be follow the recommended format below.");
+         System.out.println("Example: 5 2 3 - + undo");
+         System.out.println("Enter 'exit' when finished.");
+         System.out.println(inputGreeting);
+     }
+ }

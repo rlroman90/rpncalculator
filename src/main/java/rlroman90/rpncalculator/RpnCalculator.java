@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class RpnCalculator {
-    private static String decimalRegex = "[0-9]+(\\.[0-9][0-9]?)?";
+    private static String decimalRegex = "^-?[0-9]+(\\.[0-9][0-9]?)?";
 
     private Operators availableOperators;
     private CalcStacks stacks;
@@ -52,7 +52,8 @@ public class RpnCalculator {
         int stringPosition = 0;
         for(int i = 0; i < operatorNumber; i++)
             stringPosition += operators[i].length() + 1;
-        return stringPosition;
+
+        return ++stringPosition; // Additional increment so position displays with first letter being location '1'
     }
 
     private String convertValueStackToString() {
@@ -81,10 +82,11 @@ public class RpnCalculator {
 
     private String getPrintedValue(double value) {
         String convertedValue;
-        if(value % 1 == 0)
-            convertedValue = Integer.toString((int) value);
+        double roundedValue = rounding.roundForPrinting(value);
+        if(roundedValue % 1 == 0)
+            convertedValue = Integer.toString((int) roundedValue);
         else
-            convertedValue = Double.toString(rounding.roundForPrinting(value));
+            convertedValue = Double.toString(roundedValue);
         return convertedValue;
     }
 
